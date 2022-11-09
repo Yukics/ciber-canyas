@@ -36,3 +36,7 @@ docker-compose down (frontend || backend) && docker-compose up -d (frontend || b
 **Backend**:
 + Go [Reference](https://go.dev/doc/)
 + Gin [Reference](https://gin-gonic.com/docs/)
+
+**DDBB**
++ Postgres 
++ Go implementation [Reference](https://blog.logrocket.com/building-simple-app-go-postgresql/)
