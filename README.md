@@ -6,7 +6,7 @@ Stupid project for counting canyes, just for fun. CIFP Francesc de Borja Moll in
 
 ## Requirements
 
-+ docker && docker-compose installed
++ docker && docker-compose installed. [Reference](https://docs.docker.com/engine/install/ubuntu/)
 
 ## Commands
 
@@ -31,8 +31,8 @@ docker-compose down (frontend || backend) && docker-compose up -d (frontend || b
 
 **Frontend**:
 + Vite
-+ Svelte
++ Svelte [Reference](https://svelte.dev/docs)
 
 **Backend**:
-+ Go
-+ Gin
++ Go [Reference](https://go.dev/doc/)
++ Gin [Reference](https://gin-gonic.com/docs/)
