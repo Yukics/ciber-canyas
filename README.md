@@ -26,3 +26,13 @@ docker-compose down (frontend || backend) && docker-compose up -d (frontend || b
 
 ## Architecture
 ![img/canyes-diagram.png](img/canyes-diagram.png)
+
+## Technologies
+
+**Frontend**:
++ Vite
++ Svelte
+
+**Backend**:
++ Go
++ Gin
