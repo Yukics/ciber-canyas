@@ -84,10 +84,12 @@ func login(mail string) LoginResponse {
 		}
 		users = append(users, usr)
 	}
-	fmt.Println(users)
+
 	if err = rows.Err(); err != nil {
 		fmt.Println(err)
 	}
+
+	fmt.Println(users)
 
 	result := LoginResponse{true, "rge"}
 	return result
