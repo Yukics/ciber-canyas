@@ -22,8 +22,13 @@ type LoginResponse struct {
 	Token   string `json:"token"`
 }
 
+type User struct {
+	Id   int64
+	Mail string
+}
+
 // ! Esto es una cutrada para poder utilizar el contexto de conexión de la BBDD desde cualquier parte
-var db *sql.DB
+var canyes *sql.DB
 
 func main() {
 	// Starts db connection
@@ -31,10 +36,6 @@ func main() {
 
 	// Initialises a router with the default functions.
 	router := gin.Default()
-
-	// router.GET("/", func(context *gin.Context) {
-	// 	context.String(http.StatusOK, "Hello world!")
-	// })
 
 	router.POST("/login", func(context *gin.Context) {
 		// Set the struct requestBody must follow
@@ -62,16 +63,32 @@ func main() {
 // * API endpoints handlers
 
 func login(mail string) LoginResponse {
-	// creates and return valid session token
+	// ? creates and return valid session token
 
-	rows, err := db.Query("SELECT * FROM users WHERE mail = $1", mail)
-
+	// Queries db, rows is returned as pointers
+	rows, err := canyes.Query(`SELECT * FROM "users" WHERE "mail" = $1`, mail)
 	if err != nil {
-		fmt.Println("DB Error")
-	} else {
-		fmt.Println(rows)
+		log.Fatal(err)
+		return LoginResponse{false, ""}
 	}
-	fmt.Println(rows)
+	defer rows.Close()
+
+	// Initializes users array
+	var users []User
+
+	// Loop through rows, using Scan to assign column data to struct fields
+	for rows.Next() {
+		var usr User
+		if err := rows.Scan(&usr.Id, &usr.Mail); err != nil {
+			fmt.Println(err)
+		}
+		users = append(users, usr)
+	}
+	fmt.Println(users)
+	if err = rows.Err(); err != nil {
+		fmt.Println(err)
+	}
+
 	result := LoginResponse{true, "rge"}
 	return result
 }
@@ -109,6 +126,8 @@ func dbConnection() {
 	if err = db.Ping(); err != nil {
 		panic(err)
 	}
+	canyes = db
+	fmt.Println("The database is connected")
 }
 
 // * Misc functions
