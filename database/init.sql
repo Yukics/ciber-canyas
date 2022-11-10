@@ -27,3 +27,6 @@ CREATE TABLE interactions (
     FOREIGN KEY (user_id) REFERENCES users (user_id),
     FOREIGN KEY (element_id) REFERENCES elements (element_id)
 );
+
+INSERT INTO users (user_id, mail)
+VALUES (DEFAULT, 'amorell@cifpfbmoll.eu');
