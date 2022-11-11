@@ -153,6 +153,15 @@ func logout(body LogoutRequestBody) LogoutResponse {
 		}
 		sessions = append(sessions, sesion)
 	}
+	if len(sessions) >= 1 {
+		_, err := canyes.Exec(`DElETE FROM sessions WHERE id like $1)`, sessions[0].Id)
+		if err != nil {
+			fmt.Println(err)
+			return LogoutResponse{false}
+		}
+	}
+
+	return LogoutResponse{true}
 	// Removes session token from table
 }
 
