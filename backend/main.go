@@ -131,7 +131,8 @@ func login(mail string) LoginResponse { // * DONE
 	return LoginResponse{true, token}
 }
 
-func logout(body LogoutRequestBody) LogoutResponse {
+func logout(body LogoutRequestBody) LogoutResponse { // * DONE
+	// Removes session token from table
 
 	rows, err := canyes.Query(`select session_id,expiration,token,mail from sessions s inner join users u ON u.user_id = s.user_id where u.mail like $1 AND s.token like $2;`, body.Mail, body.Token)
 	if err != nil {
@@ -162,7 +163,6 @@ func logout(body LogoutRequestBody) LogoutResponse {
 	}
 
 	return LogoutResponse{true}
-	// Removes session token from table
 }
 
 func newInteraction(mail string, emoji string) {
