@@ -169,9 +169,35 @@ func newInteraction(mail string, emoji string) {
 	// Add new interaction
 }
 
-func checkSession(mail string, token string) {
+func checkSession(mail string, token string) bool {
 	// if mail is logged then return true
 	// else false
+	rows, err := canyes.Query(`select session_id,expiration,token,mail from sessions s inner join users u ON u.user_id = s.user_id where u.mail like $1 AND s.token like $2;`, body.Mail, body.Token)
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
+
+	defer rows.Close()
+
+	// Initializes users array
+	var sessions []Session
+
+	// Loop through rows, using Scan to assign column data to struct fields
+	for rows.Next() {
+		var sesion Session
+		if err := rows.Scan(&sesion.Id, &sesion.Expiration, &sesion.Mail); err != nil {
+			fmt.Println(err)
+			return false
+		}
+		sessions = append(sessions, sesion)
+	}
+
+	if len(sessions) >= 1 {
+		return true
+	}
+
+	return false
 }
 
 // * DB functions
