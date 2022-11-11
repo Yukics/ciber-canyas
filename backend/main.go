@@ -2,29 +2,52 @@ package main
 
 import (
 	// "fmt"
+	"crypto/rand"
 	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
 	_ "github.com/lib/pq"
 )
 
+// * HTTP Requests
 type EmailRequestBody struct {
 	Mail string `json:"mail"`
 }
+
+type LogoutRequestBody struct {
+	Mail  string `json:"mail"`
+	Token string `json:"token"`
+}
+
+// * HTTP Responses
 
 type LoginResponse struct {
 	Success bool   `json:"success"`
 	Token   string `json:"token"`
 }
 
+type LogoutResponse struct {
+	Success bool `json:"success"`
+}
+
+// * SQL structs
+
 type User struct {
 	Id   int64
 	Mail string
+}
+
+type Session struct {
+	Id         int64
+	Mail       string
+	Expiration time.Time
+	Token      string
 }
 
 // ! Esto es una cutrada para poder utilizar el contexto de conexión de la BBDD desde cualquier parte
@@ -42,7 +65,6 @@ func main() {
 		var requestBody EmailRequestBody
 
 		if err := context.BindJSON(&requestBody); err != nil {
-			// DO SOMETHING WITH THE ERROR
 			context.String(http.StatusOK, "ERROR: Input not valid")
 		}
 
@@ -52,7 +74,16 @@ func main() {
 	})
 
 	router.POST("/logout", func(context *gin.Context) {
-		context.String(http.StatusOK, "Hello world!")
+		// Set the struct requestBody must follow
+		var requestBody LogoutRequestBody
+
+		if err := context.BindJSON(&requestBody); err != nil {
+			context.String(http.StatusOK, "ERROR: Input not valid")
+		}
+
+		logoutStatus := logout(requestBody)
+
+		context.JSON(http.StatusOK, logoutStatus)
 	})
 
 	// starts the server at port 8080
@@ -62,7 +93,7 @@ func main() {
 
 // * API endpoints handlers
 
-func login(mail string) LoginResponse {
+func login(mail string) LoginResponse { // * DONE
 	// ? creates and return valid session token
 
 	// Queries db, rows is returned as pointers
@@ -81,21 +112,47 @@ func login(mail string) LoginResponse {
 		var usr User
 		if err := rows.Scan(&usr.Id, &usr.Mail); err != nil {
 			fmt.Println(err)
+			return LoginResponse{false, ""}
 		}
 		users = append(users, usr)
 	}
 
-	if err = rows.Err(); err != nil {
-		fmt.Println(err)
+	token := generateToken()
+	expirate := generateExpiration()
+
+	if len(users) == 1 {
+		_, err := canyes.Exec(`INSERT INTO sessions (session_id,user_id,expiration,token) VALUES (DEFAULT, $1,$2,$3)`, users[0].Id, expirate, token)
+		if err != nil {
+			fmt.Println(err)
+			return LoginResponse{false, ""}
+		}
 	}
 
-	fmt.Println(users)
-
-	result := LoginResponse{true, "rge"}
-	return result
+	return LoginResponse{true, token}
 }
 
-func logout(mail string) {
+func logout(body LogoutRequestBody) LogoutResponse {
+
+	rows, err := canyes.Query(`select session_id,expiration,token,mail from sessions s inner join users u ON u.user_id = s.user_id where u.mail like $1 AND s.token like $2;`, body.Mail, body.Token)
+	if err != nil {
+		log.Fatal(err)
+		return LogoutResponse{false}
+	}
+
+	defer rows.Close()
+
+	// Initializes users array
+	var sessions []Session
+
+	// Loop through rows, using Scan to assign column data to struct fields
+	for rows.Next() {
+		var sesion Session
+		if err := rows.Scan(&sesion.Id, &sesion.Expiration, &sesion.Mail); err != nil {
+			fmt.Println(err)
+			return LogoutResponse{false}
+		}
+		sessions = append(sessions, sesion)
+	}
 	// Removes session token from table
 }
 
@@ -134,6 +191,13 @@ func dbConnection() {
 
 // * Misc functions
 
-func generateToken() {
+func generateToken() string {
+	b := make([]byte, 64)
+	rand.Read(b)
+	return fmt.Sprintf("%x", b)
+}
 
+func generateExpiration() time.Time {
+	expiration := time.Now().Local().Add(time.Minute * time.Duration(60))
+	return expiration
 }

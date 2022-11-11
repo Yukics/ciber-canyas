@@ -11,7 +11,7 @@ CREATE TABLE sessions (
     session_id serial PRIMARY KEY,
     user_id INT NOT NULL,
     expiration TIMESTAMP NOT NULL,
-    token VARCHAR ( 120 ) UNIQUE NOT NULL,
+    token VARCHAR ( 128 ) UNIQUE NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (user_id)
 );
 
