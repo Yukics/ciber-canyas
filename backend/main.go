@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-
+	"github.com/go-co-op/gocron"
 	_ "github.com/lib/pq"
 )
 
@@ -25,6 +25,12 @@ type LogoutRequestBody struct {
 	Token string `json:"token"`
 }
 
+type InteractionRequestBody struct {
+	Mail  string `json:"mail"`
+	Token string `json:"token"`
+	Emoji string `json:"emoji"`
+}
+
 // * HTTP Responses
 
 type LoginResponse struct {
@@ -36,26 +42,49 @@ type LogoutResponse struct {
 	Success bool `json:"success"`
 }
 
+type InteractionResponse struct {
+	Success bool `json:"success"`
+}
+
 // * SQL structs
 
 type User struct {
-	Id   int64
+	Id   int
 	Mail string
 }
 
 type Session struct {
-	Id         int64
+	Id         int
 	Mail       string
 	Expiration time.Time
 	Token      string
+}
+
+type Emoji struct {
+	Emoji string
+	Count int64
+}
+
+type Interactor struct {
+	Mail  string `json:"mail"`
+	Count int    `json:"count"`
 }
 
 // ! Esto es una cutrada para poder utilizar el contexto de conexión de la BBDD desde cualquier parte
 var canyes *sql.DB
 
 func main() {
+
 	// Starts db connection
 	dbConnection()
+
+	s := gocron.NewScheduler(time.UTC)
+	// Every 5 min
+	s.Cron("*/5 * * * *").Do(func() {
+		cleanSessions()
+	})
+	// starts the scheduler asynchronously
+	s.StartAsync()
 
 	// Initialises a router with the default functions.
 	router := gin.Default()
@@ -86,6 +115,32 @@ func main() {
 		context.JSON(http.StatusOK, logoutStatus)
 	})
 
+	router.GET("/emojis", func(context *gin.Context) {
+
+		emojis := getEmojis()
+
+		context.JSON(http.StatusOK, emojis)
+	})
+
+	router.POST("/interaction", func(context *gin.Context) {
+		// Set the struct requestBody must follow
+		var requestBody InteractionRequestBody
+
+		if err := context.BindJSON(&requestBody); err != nil {
+			context.String(http.StatusOK, "ERROR: Input not valid")
+		}
+
+		interactionStatus := interact(requestBody)
+
+		context.JSON(http.StatusOK, interactionStatus)
+	})
+
+	router.GET("/topInteractors", func(context *gin.Context) {
+
+		interactions := getTopInteractors()
+
+		context.JSON(http.StatusOK, interactions)
+	})
 	// starts the server at port 8080
 	router.Run(":8080")
 
@@ -134,27 +189,96 @@ func login(mail string) LoginResponse { // * DONE
 func logout(reqBody LogoutRequestBody) LogoutResponse { // * DONE
 	// Removes session token from table
 	sessionId := checkSession(reqBody.Mail, reqBody.Token)
+	if sessionId == 0 {
+		return LogoutResponse{false}
+	}
 
-	if sessionId > 0 {
-		_, err := canyes.Exec(`DElETE FROM sessions WHERE id like $1)`, sessionId)
-		if err != nil {
-			fmt.Println(err)
-			return LogoutResponse{false}
-		}
+	_, err := canyes.Exec(`DElETE FROM sessions WHERE id like $1)`, sessionId)
+	if err != nil {
+		fmt.Println(err)
+		return LogoutResponse{false}
 	}
 
 	return LogoutResponse{true}
 }
 
-func newInteraction(mail string, emoji string) {
+func interact(reqBody InteractionRequestBody) InteractionResponse {
+	// Check if user is logged in
+	sessionId := checkSession(reqBody.Mail, reqBody.Token)
+
+	if sessionId == 0 {
+		return InteractionResponse{false}
+	}
+
 	// Add new interaction
+	_, err := canyes.Exec(`INSERT INTO interactions(user_id, element_id) (
+		SELECT x.user_id, y.element_id 
+		FROM 
+			(select 'a' as joinner, u.user_id from users u where u.mail like $1) x
+		left join 
+			(select 'a' as joinner, e.element_id from elements e where e.emoji like $2) y
+		on (x.joinner = y.joinner)
+	)`, reqBody.Mail, reqBody.Emoji)
+
+	if err != nil {
+		fmt.Println(err)
+		return InteractionResponse{false}
+	}
+
+	return InteractionResponse{true}
 }
 
-func checkSession(mail string, token string) int64 {
+func getEmojis() []Emoji {
+	// * Emoji codes: https://unicode.org/emoji/charts/full-emoji-list.html
+	rows, err := canyes.Query(`SELECT e.emoji, COALESCE(COUNT(i.element_id), 0) as count FROM elements e LEFT JOIN interactions i ON i.element_id = e.element_id GROUP BY e.emoji;`)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	var emojis []Emoji
+
+	for rows.Next() {
+		var emj Emoji
+		if err := rows.Scan(&emj.Emoji, &emj.Count); err != nil {
+			fmt.Println(err)
+			return []Emoji{{"", 0}}
+		}
+		emojis = append(emojis, emj)
+	}
+
+	return emojis
+}
+
+func getTopInteractors() []Interactor {
+	rows, err := canyes.Query(`SELECT u.mail , COALESCE(COUNT(i.user_id), 0) as count FROM users u LEFT JOIN interactions i ON i.user_id  = u.user_id GROUP BY u.mail order by count;`)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	var interactors []Interactor
+
+	for rows.Next() {
+		var intr Interactor
+		if err := rows.Scan(&intr.Mail, &intr.Count); err != nil {
+			fmt.Println(err)
+			return []Interactor{{"", 0}}
+		}
+		interactors = append(interactors, intr)
+	}
+
+	return interactors
+}
+
+func checkSession(mail string, token string) int {
 	// if mail is logged then return id
 	// else 0
 
-	rows, err := canyes.Query(`select session_id,expiration,token,mail from sessions s inner join users u ON u.user_id = s.user_id where u.mail like $1 AND s.token like $2;`, mail, token)
+	rows, err := canyes.Query(`SELECT session_id,expiration,mail FROM sessions s INNER JOIN users u ON u.user_id = s.user_id WHERE u.mail like $1 AND s.token like $2 AND  s.expiration > now() AT time ZONE 'utc';`, mail, token)
+
 	if err != nil {
 		log.Fatal(err)
 		return 0
@@ -206,6 +330,13 @@ func dbConnection() {
 	fmt.Println("The database is connected")
 }
 
+func cleanSessions() {
+	_, err := canyes.Exec(`DELETE FROM sessions WHERE expiration < now() AT time ZONE 'utc';`)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
 // * Misc functions
 
 func generateToken() string {
@@ -215,6 +346,9 @@ func generateToken() string {
 }
 
 func generateExpiration() time.Time {
-	expiration := time.Now().Local().Add(time.Minute * time.Duration(60))
+	// Small hack for not thinking about utc shit
+	now := 60
+
+	expiration := time.Now().Local().Add(time.Minute * time.Duration(now+60))
 	return expiration
 }
