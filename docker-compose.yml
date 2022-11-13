@@ -39,6 +39,7 @@ services:
       POSTGRES_PASSWORD: "${POSTGRES_PASS}"
 
   nginx:
+    # For development purposes /api/ trimming
     image: nginx
     ports:
       - 80:80
