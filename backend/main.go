@@ -193,7 +193,7 @@ func logout(reqBody LogoutRequestBody) LogoutResponse { // * DONE
 		return LogoutResponse{false}
 	}
 
-	_, err := canyes.Exec(`DElETE FROM sessions WHERE user_id = (SELECT user_id from users WHERE mail LIKE $1);`, sessionId)
+	_, err := canyes.Exec(`DElETE FROM sessions WHERE user_id = (SELECT user_id from users WHERE mail LIKE $1);`, reqBody.Mail)
 	if err != nil {
 		fmt.Println(err)
 		return LogoutResponse{false}

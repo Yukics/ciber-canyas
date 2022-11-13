@@ -3,9 +3,7 @@
     import { postLogin } from '../lib/crud';
     let mail = null;
 
-    function closeLogin(event){
-        console.log(event.target)
-        
+    function closeLogin(event){        
         if (!document.getElementById('form').contains(event.target)){
             if(!document.getElementById('button').contains(event.target) || !document.getElementById('mail').contains(event.target)){
                 setLoginModal(false)
@@ -15,7 +13,6 @@
 
     async function sendLogin(){
         const res = await postLogin(mail)
-        console.log("login res: ", res)
         if(res === true){
             setLoginModal(false)
         }

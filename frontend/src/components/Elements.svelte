@@ -12,7 +12,7 @@
         emojisArr = $emojis;
 	});
 
-    export async function update(){
+    export async function updateEmojis(){
         emojisArr = $emojis;
     }
 
@@ -36,7 +36,7 @@
 <meta charset="UTF-8">
 <div class="elements">
     {#each emojisArr as emoji}
-        <EmojiCard bind:emoji={emoji.emoji} bind:counter={emoji.count} {update}/>
+        <EmojiCard bind:emoji={emoji.emoji} bind:counter={emoji.count} {updateEmojis}/>
     {:else}
 		<Loading/>
     {/each}

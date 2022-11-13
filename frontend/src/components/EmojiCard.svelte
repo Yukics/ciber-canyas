@@ -3,14 +3,14 @@
     import { postInteraction } from '../lib/crud' 
     export let emoji;
     export let counter;
-    export let update;
+    export let updateEmojis;
 
     async function handleCount(emoji){
         if(await postInteraction(emoji)){
-            await update();
-            console.log(emoji, counter);
+            await updateEmojis();
         }
     }
+    
 </script>
 
 <style>

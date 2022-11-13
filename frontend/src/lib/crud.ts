@@ -45,11 +45,8 @@ export async function postLogin(mail: string){
 
 export async function postLogout(){
     try {
-        console.log("Entr")
         const res = await axios.post(`/api/logout`, {mail: get(user), token: get(token)});
-        console.log(res.data)
         if(res.data.success){
-            console.log("success")
             setUser("")
             setToken("")
             return true
