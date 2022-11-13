@@ -1,9 +1,8 @@
 import { writable } from 'svelte/store';
 
-export const user = writable(localStorage.getItem("user") || "");
-export const token = writable(localStorage.getItem("token") || "");
-export const emojis = writable(localStorage.getItem("emojis") || null);
-export const loginModal = writable(localStorage.getItem("loginModal") || false);
+export const user = writable(sessionStorage.getItem("user") || "");
+export const token = writable(sessionStorage.getItem("token") || "");
+export const loginModal = writable(sessionStorage.getItem("loginModal") || false);
 
 export function setUser(newUser:string) {
     user.set(newUser);

@@ -1,11 +1,16 @@
 <script>
     import Fa from 'svelte-fa/src/fa.svelte';
-    import { faRightToBracket } from '@fortawesome/free-solid-svg-icons';
+    import { faRightToBracket, faUserCircle } from '@fortawesome/free-solid-svg-icons';
     import LoginModal from './LoginModal.svelte';
-    import { loginModal, setLoginModal } from '../lib/store';
+    import { loginModal, setLoginModal, user, token } from '../lib/store';
+    import { postLogout } from '../lib/crud';
 
     function openLogin(){
         setLoginModal(true)
+    }
+
+    function logout(){
+        postLogout($user, $token)
     }
 
 </script>
@@ -18,11 +23,13 @@
         width: 100%;
         margin-top: 0vh;
         color: aliceblue;
-        font-size: 2vw;
+    }
+    .login{
         display: flex;
-        align-items: center;
-        align-content: flex-end;
+        flex-direction: row;
         justify-content: flex-end;
+        /* align-items: center; */
+        align-content: center;
         gap: 1vw;
     }
     .login:hover{
@@ -31,15 +38,31 @@
     }
     .icon{
         margin-right: 2%;
+        font-size: 2vw;
+        margin-top: 0.8vh;
     }
     p{
         font-size: 1.6vw;
+        margin-top: 1.2vh;
     }
 </style>
 
-<nav class="navbar">
-    <div on:mousedown={() => openLogin()} class="login"><p>Login</p></div><div class="icon"><Fa icon={faRightToBracket} /></div>
-</nav>
+{#if $user !== ""}
+    <nav class="navbar">
+        <div on:mousedown={() => logout()} class="login">
+            <div><p>{$user}</p></div>
+            <div class="icon"><Fa icon={faUserCircle}/></div>
+        </div>
+    </nav>
+{:else}
+    <nav class="navbar">
+        <div on:mousedown={() => openLogin()} class="login">
+            <div><p>Login</p></div>
+            <div class="icon"><Fa icon={faRightToBracket} /></div>
+        </div>
+    </nav>
+{/if}
+
 <!--El dolar es para decirle que esté atento a los cambios de la store-->
 {#if $loginModal}
     <LoginModal/>

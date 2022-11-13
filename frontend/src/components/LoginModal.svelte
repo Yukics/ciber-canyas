@@ -1,7 +1,22 @@
 <script>
-    import {setUser, setToken, setLoginModal} from '../lib/store';
+    import { setLoginModal } from '../lib/store';
+    import { postLogin } from '../lib/crud';
+    let mail = null;
+
     function closeLogin(event){
+        console.log(event.target)
+        
         if (!document.getElementById('form').contains(event.target)){
+            if(!document.getElementById('button').contains(event.target) || !document.getElementById('mail').contains(event.target)){
+                setLoginModal(false)
+            }
+        }
+    }
+
+    async function sendLogin(){
+        const res = await postLogin(mail)
+        console.log("login res: ", res)
+        if(res === true){
             setLoginModal(false)
         }
     }
@@ -20,7 +35,7 @@
         align-items: center;
         align-content: center;
     }
-    form{
+    #form{
         width: auto;
         height: auto;
         background-color: rgb(213, 191, 191);
@@ -51,8 +66,8 @@
 </style>
 
 <div class="login" on:mousedown={(event) => closeLogin(event)}>
-    <form id="form">
-        <input type="text" id="mail" name="mail" placeholder="Mail del Borja"/>
-        <input type="button" value="Login"/>
-    </form>
+    <div id="form">
+        <input type="text" id="mail" name="mail" placeholder="Mail del Borja" bind:value={mail}/>
+        <input type="button" id="button" value="Login" on:mousedown={() => sendLogin()}/>
+    </div>
 </div>

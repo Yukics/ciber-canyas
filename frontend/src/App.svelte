@@ -1,9 +1,13 @@
 <script>
-  import svelteLogo from './assets/svelte.svg'
-  import Counter from './lib/Counter.svelte'
+  import { user, token } from './lib/store'
   import Footer from './components/Footer.svelte';
   import Nav from './components/Nav.svelte';
   import Elements from './components/Elements.svelte';
+
+  //? get previous stored session values
+  user.subscribe(val => sessionStorage.setItem("user", val));
+  token.subscribe(val => sessionStorage.setItem("token", val));
+
 </script>
 
 <style>
