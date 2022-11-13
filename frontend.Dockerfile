@@ -1,9 +1,12 @@
-FROM node:18
+FROM node:18 as builder
 
 WORKDIR /app
 
-# COPY frontend/package.json .
+COPY frontend/package.json .
 
-# RUN npm install
+RUN npm install && npm run build
 
-CMD ["npm", "run", "dev"]
+
+FROM nginx 
+
+COPY --from=builder /app/dist/ /var/www/html/
