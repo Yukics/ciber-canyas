@@ -202,7 +202,7 @@ func logout(reqBody LogoutRequestBody) LogoutResponse { // * DONE
 	return LogoutResponse{true}
 }
 
-func interact(reqBody InteractionRequestBody) InteractionResponse {
+func interact(reqBody InteractionRequestBody) InteractionResponse { // * DONE
 	// Check if user is logged in
 	sessionId := checkSession(reqBody.Mail, reqBody.Token)
 
@@ -228,7 +228,7 @@ func interact(reqBody InteractionRequestBody) InteractionResponse {
 	return InteractionResponse{true}
 }
 
-func getEmojis() []Emoji {
+func getEmojis() []Emoji { // * DONE
 	// * Emoji codes: https://unicode.org/emoji/charts/full-emoji-list.html
 	rows, err := canyes.Query(`SELECT e.emoji, COALESCE(COUNT(i.element_id), 0) as count FROM elements e LEFT JOIN interactions i ON i.element_id = e.element_id GROUP BY e.emoji;`)
 
@@ -251,7 +251,7 @@ func getEmojis() []Emoji {
 	return emojis
 }
 
-func getTopInteractors() []Interactor {
+func getTopInteractors() []Interactor { // * DONE
 	rows, err := canyes.Query(`SELECT u.mail , COALESCE(COUNT(i.user_id), 0) as count FROM users u LEFT JOIN interactions i ON i.user_id  = u.user_id GROUP BY u.mail order by count;`)
 
 	if err != nil {
@@ -273,7 +273,7 @@ func getTopInteractors() []Interactor {
 	return interactors
 }
 
-func checkSession(mail string, token string) int {
+func checkSession(mail string, token string) int { // * DONE
 	// if mail is logged then return id
 	// else 0
 
@@ -308,7 +308,7 @@ func checkSession(mail string, token string) int {
 
 // * DB functions
 
-func dbConnection() {
+func dbConnection() { // * DONE
 	dbName := os.Getenv("POSTGRES_DB")
 	dbUser := os.Getenv("POSTGRES_USER")
 	dbPass := os.Getenv("POSTGRES_PASSWORD")
@@ -330,7 +330,7 @@ func dbConnection() {
 	fmt.Println("The database is connected")
 }
 
-func cleanSessions() {
+func cleanSessions() { // * DONE
 	_, err := canyes.Exec(`DELETE FROM sessions WHERE expiration < now() AT time ZONE 'utc';`)
 	if err != nil {
 		fmt.Println(err)
@@ -339,13 +339,13 @@ func cleanSessions() {
 
 // * Misc functions
 
-func generateToken() string {
+func generateToken() string { // * DONE
 	b := make([]byte, 64)
 	rand.Read(b)
 	return fmt.Sprintf("%x", b)
 }
 
-func generateExpiration() time.Time {
+func generateExpiration() time.Time { // * DONE
 	// Small hack for not thinking about utc shit
 	now := 60
 
