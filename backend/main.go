@@ -61,8 +61,8 @@ type Session struct {
 }
 
 type Emoji struct {
-	Emoji string
-	Count int64
+	Emoji string `json:"emoji"`
+	Count int64  `json:"count"`
 }
 
 type Interactor struct {
