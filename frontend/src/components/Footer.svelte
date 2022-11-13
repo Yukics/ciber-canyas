@@ -16,6 +16,7 @@
         color: aliceblue;
         font-size: 2vw;
         text-decoration: none;
+        user-select: none;
     }
     a:hover{
         color: rgb(172, 172, 172);

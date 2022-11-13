@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { setUser, setToken, user, token } from './store';
-import { get } from 'svelte/store'
+import { setUser, setToken, setEmojis, user, token } from './store';
+import { get } from 'svelte/store';
 
 export async function getInteractors(){
     try {
@@ -15,7 +15,12 @@ export async function getInteractors(){
 export async function getElements(){
     try {
         const res = await axios.get(`/api/emojis`);
-        return res.data;
+        if(res.data){
+            setEmojis(res.data)
+            return true
+        } else {
+            return false
+        }
     } catch (err) {
         console.log(err);
         return false
@@ -57,10 +62,15 @@ export async function postLogout(){
     }
 }
 
-export async function postInteraction(){
+export async function postInteraction(emoji: string){
     try {
-        const res = await axios.get(`/api/topInteractors`);
-        return res.data;
+        const res = await axios.post(`/api/interaction`, {mail: get(user), token: get(token), emoji: emoji});
+        if(res.data.success){
+            await getElements();
+            return true
+        } else {
+            return false
+        }
     } catch (err) {
         console.log(err);
         return false

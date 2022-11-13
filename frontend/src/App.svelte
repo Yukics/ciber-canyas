@@ -1,5 +1,5 @@
 <script>
-  import { user, token } from './lib/store'
+  import { user, token, emojis } from './lib/store'
   import Footer from './components/Footer.svelte';
   import Nav from './components/Nav.svelte';
   import Elements from './components/Elements.svelte';

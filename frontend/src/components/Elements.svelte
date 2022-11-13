@@ -3,12 +3,18 @@
     import { getElements } from '../lib/crud';
     import Loading from './Loading.svelte';
     import EmojiCard from './EmojiCard.svelte'
-    
-    let elements = []
+    import { emojis } from '../lib/store'
+
+    let emojisArr = [];
 
     onMount(async () => {
-		elements = await getElements();
+		await getElements();
+        emojisArr = $emojis;
 	});
+
+    export async function update(){
+        emojisArr = $emojis;
+    }
 
 </script>
 
@@ -29,8 +35,8 @@
 
 <meta charset="UTF-8">
 <div class="elements">
-    {#each elements as emoji}
-    <EmojiCard emoji={emoji.emoji} counter={emoji.count}/>
+    {#each emojisArr as emoji}
+        <EmojiCard bind:emoji={emoji.emoji} bind:counter={emoji.count} {update}/>
     {:else}
 		<Loading/>
     {/each}

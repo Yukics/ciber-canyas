@@ -1,7 +1,16 @@
 <script>
     import { parseEmojiToHtml } from '../lib/misc';
+    import { postInteraction } from '../lib/crud' 
     export let emoji;
     export let counter;
+    export let update;
+
+    async function handleCount(emoji){
+        if(await postInteraction(emoji)){
+            await update();
+            console.log(emoji, counter);
+        }
+    }
 </script>
 
 <style>
@@ -24,16 +33,18 @@
         background-color: rgba(116, 136, 252, 0.171);
     }
     .emoji{
+        user-select: none;
         font-size:10vw;
         margin: 1vw;
     }
     .count{
+        user-select: none;
         color: aliceblue;
         font-size: 2vw;
     }
 </style>
 
-<div class="card">
+<div class="card" on:mousedown={() => handleCount(emoji)}>
     <p class="emoji">{parseEmojiToHtml(emoji)}</p>
     <p class="count">Cuenta {counter}</p>    
 </div>

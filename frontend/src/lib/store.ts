@@ -4,6 +4,8 @@ export const user = writable(sessionStorage.getItem("user") || "");
 export const token = writable(sessionStorage.getItem("token") || "");
 export const loginModal = writable(sessionStorage.getItem("loginModal") || false);
 
+export const emojis = writable([]);
+
 export function setUser(newUser:string) {
     user.set(newUser);
 }
@@ -15,3 +17,7 @@ export function setToken(newToken:string) {
 export function setLoginModal(newEnable: boolean){
     loginModal.set(newEnable)
 }
+
+export function setEmojis(newEmojis){
+    emojis.set(newEmojis)
+}   
