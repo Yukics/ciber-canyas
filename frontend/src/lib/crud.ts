@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { setUser, setToken } from './store';
+import { setUser, setToken, user, token } from './store';
+import { get } from 'svelte/store'
 
 export async function getInteractors(){
     try {
@@ -37,10 +38,13 @@ export async function postLogin(mail: string){
     }
 }
 
-export async function postLogout(user: string, token:string){
+export async function postLogout(){
     try {
-        const res = await axios.post(`/api/logout`, {mail: user, token: token});
+        console.log("Entr")
+        const res = await axios.post(`/api/logout`, {mail: get(user), token: get(token)});
+        console.log(res.data)
         if(res.data.success){
+            console.log("success")
             setUser("")
             setToken("")
             return true

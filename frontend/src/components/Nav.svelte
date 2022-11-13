@@ -2,15 +2,11 @@
     import Fa from 'svelte-fa/src/fa.svelte';
     import { faRightToBracket, faUserCircle } from '@fortawesome/free-solid-svg-icons';
     import LoginModal from './LoginModal.svelte';
-    import { loginModal, setLoginModal, user, token } from '../lib/store';
+    import { loginModal, setLoginModal, user } from '../lib/store';
     import { postLogout } from '../lib/crud';
 
     function openLogin(){
         setLoginModal(true)
-    }
-
-    function logout(){
-        postLogout($user, $token)
     }
 
 </script>
@@ -49,7 +45,7 @@
 
 {#if $user !== ""}
     <nav class="navbar">
-        <div on:mousedown={() => logout()} class="login">
+        <div on:mousedown={() => postLogout()} class="login">
             <div><p>{$user}</p></div>
             <div class="icon"><Fa icon={faUserCircle}/></div>
         </div>
