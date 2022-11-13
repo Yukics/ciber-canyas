@@ -2,7 +2,7 @@ import axios from 'axios';
 
 export async function getInteractors(){
     try {
-        const res = await axios.get(`/api/topinteractors`);
+        const res = await axios.get(`/api/topInteractors`);
         return res.data;
     } catch (err) {
         console.log(err);

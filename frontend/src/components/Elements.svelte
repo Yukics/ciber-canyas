@@ -1,7 +1,8 @@
 <script>
     import { onMount } from 'svelte';
     import { getElements } from '../lib/crud';
-    import { parseEmojiToHtml } from '../lib/misc'
+    import Loading from './Loading.svelte';
+    import EmojiCard from './EmojiCard.svelte'
     
     let elements = []
 
@@ -18,22 +19,19 @@
         position: absolute;
         height: 88vh;
         margin-top: 6vh;
-    }
-    h1{
-        font-size: 10vw;
-    }
-    .button:hover{
-        cursor: pointer;
+        display: flex;
+        align-items: center;
+        align-content: center;
+        justify-content: center;
+        gap: 5vw;
     }
 </style>
 
 <meta charset="UTF-8">
 <div class="elements">
     {#each elements as emoji}
-        <div class="button">
-            <h1>{parseEmojiToHtml(emoji.emoji)}</h1>
-        </div>
+    <EmojiCard emoji={emoji.emoji} counter={emoji.count}/>
     {:else}
-		<p>loading...</p>
+		<Loading/>
     {/each}
 </div>

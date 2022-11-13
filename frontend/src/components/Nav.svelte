@@ -1,6 +1,13 @@
 <script>
-    import Fa from 'svelte-fa/src/fa.svelte'
-    import { faRightToBracket } from '@fortawesome/free-solid-svg-icons'
+    import Fa from 'svelte-fa/src/fa.svelte';
+    import { faRightToBracket } from '@fortawesome/free-solid-svg-icons';
+    import LoginModal from './LoginModal.svelte';
+    import { loginModal, setLoginModal } from '../lib/store';
+
+    function openLogin(){
+        setLoginModal(true)
+    }
+
 </script>
 
 <style>
@@ -18,6 +25,10 @@
         justify-content: flex-end;
         gap: 1vw;
     }
+    .login:hover{
+        cursor: pointer;
+
+    }
     .icon{
         margin-right: 2%;
     }
@@ -27,5 +38,9 @@
 </style>
 
 <nav class="navbar">
-    <div><p>Login</p></div><div class="icon"><Fa icon={faRightToBracket} /> </div>
+    <div on:mousedown={() => openLogin()} class="login"><p>Login</p></div><div class="icon"><Fa icon={faRightToBracket} /></div>
 </nav>
+<!--El dolar es para decirle que esté atento a los cambios de la store-->
+{#if $loginModal}
+    <LoginModal/>
+{/if}
