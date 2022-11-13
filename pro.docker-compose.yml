@@ -7,12 +7,6 @@ services:
       dockerfile: frontend.Dockerfile
     ports: 
       - 5173:80
-    volumes:
-      - ./frontend:/usr/src/frontend
-    working_dir: /usr/src/frontend
-    environment:
-      NODE_ENV: "production"
-    command: bash -c "npm install && npm run build && node ./dist/index.html"
 
   backend:
     image: golang:1.19.3
