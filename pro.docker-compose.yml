@@ -6,7 +6,7 @@ services:
     build: 
       dockerfile: frontend.Dockerfile
     ports: 
-      - 5173:5173
+      - 5173:80
     volumes:
       - ./frontend:/usr/src/frontend
     working_dir: /usr/src/frontend
