@@ -31,7 +31,7 @@
 <div class="elements">
     {#each elements as emoji}
         <div class="button">
-            <h1>{parseEmojiToHtml(emoji.Emoji)}</h1>
+            <h1>{parseEmojiToHtml(emoji.emoji)}</h1>
         </div>
     {:else}
 		<p>loading...</p>

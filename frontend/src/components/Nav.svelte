@@ -16,14 +16,16 @@
         align-items: center;
         align-content: flex-end;
         justify-content: flex-end;
+        gap: 1vw;
     }
     .icon{
         margin-right: 2%;
     }
+    p{
+        font-size: 1.6vw;
+    }
 </style>
 
 <nav class="navbar">
-    <div class="icon">
-        <Fa icon={faRightToBracket} />
-    </div>
+    <div><p>Login</p></div><div class="icon"><Fa icon={faRightToBracket} /> </div>
 </nav>
