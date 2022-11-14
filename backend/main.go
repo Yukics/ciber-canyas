@@ -1,13 +1,13 @@
 package main
 
 import (
-	// "fmt"
 	"crypto/rand"
 	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -152,30 +152,11 @@ func main() {
 func login(mail string) LoginResponse { // * DONE
 	// ? creates and return valid session token
 
-	// Queries db, rows is returned as pointers
-	rows, err := canyes.Query(`SELECT * FROM "users" WHERE "mail" = $1`, mail)
-	if err != nil {
-		log.Fatal(err)
-		return LoginResponse{false, ""}
-	}
-	defer rows.Close()
-
-	// Initializes users array
-	var users []User
-
-	// Loop through rows, using Scan to assign column data to struct fields
-	for rows.Next() {
-		var usr User
-		if err := rows.Scan(&usr.Id, &usr.Mail); err != nil {
-			fmt.Println(err)
-			return LoginResponse{false, ""}
-		}
-		users = append(users, usr)
-	}
+	users := getUsers(mail)
 
 	token := generateToken()
 	expirate := generateExpiration()
-	fmt.Println(users)
+
 	if len(users) >= 1 {
 		_, err := canyes.Exec(`INSERT INTO sessions (session_id,user_id,expiration,token) VALUES (DEFAULT, $1,$2,$3)`, users[0].Id, expirate, token)
 		if err != nil {
@@ -183,7 +164,30 @@ func login(mail string) LoginResponse { // * DONE
 			return LoginResponse{false, ""}
 		}
 	} else {
-		return LoginResponse{false, ""}
+		// TODO si el correo es @cifpfbmoll.eu meterlo en users y proceder,
+		// TODO si no a la mierda
+		match, _ := regexp.MatchString("^[a-zA-Z]+@cifpfbmoll.eu$", mail)
+
+		if match == true {
+			_, err := canyes.Exec(`INSERT INTO users (mail) VALUES ($1)`, mail)
+			if err != nil {
+				return LoginResponse{false, ""}
+			}
+
+			users := getUsers(mail)
+
+			if len(users) >= 1 {
+				_, err := canyes.Exec(`INSERT INTO sessions (session_id,user_id,expiration,token) VALUES (DEFAULT, $1,$2,$3)`, users[0].Id, expirate, token)
+				if err != nil {
+					fmt.Println(err)
+					return LoginResponse{false, ""}
+				}
+			} else {
+				return LoginResponse{false, ""}
+			}
+		} else {
+			return LoginResponse{false, ""}
+		}
 	}
 
 	return LoginResponse{true, token}
@@ -338,6 +342,27 @@ func cleanSessions() { // * DONE
 	if err != nil {
 		fmt.Println(err)
 	}
+}
+
+func getUsers(mail string) []User {
+	rows, err := canyes.Query(`SELECT * FROM "users" WHERE "mail" = $1`, mail)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	// Initializes users array
+	var users []User
+
+	// Loop through rows, using Scan to assign column data to struct fields
+	for rows.Next() {
+		var usr User
+		if err := rows.Scan(&usr.Id, &usr.Mail); err != nil {
+			fmt.Println(err)
+		}
+		users = append(users, usr)
+	}
+	return users
 }
 
 // * Misc functions
