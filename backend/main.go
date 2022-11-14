@@ -175,7 +175,7 @@ func login(mail string) LoginResponse { // * DONE
 
 	token := generateToken()
 	expirate := generateExpiration()
-
+	fmt.Println(users)
 	if len(users) >= 1 {
 		_, err := canyes.Exec(`INSERT INTO sessions (session_id,user_id,expiration,token) VALUES (DEFAULT, $1,$2,$3)`, users[0].Id, expirate, token)
 		if err != nil {
