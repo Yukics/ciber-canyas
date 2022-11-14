@@ -182,6 +182,8 @@ func login(mail string) LoginResponse { // * DONE
 			fmt.Println(err)
 			return LoginResponse{false, ""}
 		}
+	} else {
+		return LoginResponse{false, ""}
 	}
 
 	return LoginResponse{true, token}
