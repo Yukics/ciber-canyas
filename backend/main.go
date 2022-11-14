@@ -95,6 +95,8 @@ func main() {
 
 		if err := context.BindJSON(&requestBody); err != nil {
 			context.String(http.StatusOK, "ERROR: Input not valid")
+			loginStatus := LoginResponse{false, ""}
+			context.JSON(http.StatusOK, loginStatus)
 		}
 
 		loginStatus := login(requestBody.Mail)
@@ -152,7 +154,7 @@ func login(mail string) LoginResponse { // * DONE
 	// ? creates and return valid session token
 
 	// Queries db, rows is returned as pointers
-	rows, err := canyes.Query(`SELECT * FROM "users" WHERE "mail" = $1`, mail)
+	rows, err := canyes.Query(`SELECT * FROM 'users' WHERE 'mail' = $1`, mail)
 	if err != nil {
 		log.Fatal(err)
 		return LoginResponse{false, ""}
