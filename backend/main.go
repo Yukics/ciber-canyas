@@ -95,8 +95,7 @@ func main() {
 
 		if err := context.BindJSON(&requestBody); err != nil {
 			context.String(http.StatusOK, "ERROR: Input not valid")
-			loginStatus := LoginResponse{false, ""}
-			context.JSON(http.StatusOK, loginStatus)
+			context.JSON(http.StatusOK, LoginResponse{false, ""})
 		}
 
 		loginStatus := login(requestBody.Mail)
@@ -177,7 +176,7 @@ func login(mail string) LoginResponse { // * DONE
 	token := generateToken()
 	expirate := generateExpiration()
 
-	if len(users) == 1 {
+	if len(users) >= 1 {
 		_, err := canyes.Exec(`INSERT INTO sessions (session_id,user_id,expiration,token) VALUES (DEFAULT, $1,$2,$3)`, users[0].Id, expirate, token)
 		if err != nil {
 			fmt.Println(err)
