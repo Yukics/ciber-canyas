@@ -163,34 +163,19 @@ func login(mail string) LoginResponse { // * DONE
 			fmt.Println(err)
 			return LoginResponse{false, ""}
 		}
-	} else {
-		// TODO si el correo es @cifpfbmoll.eu meterlo en users y proceder,
-		// TODO si no a la mierda
-		match, _ := regexp.MatchString("^[a-zA-Z]+@cifpfbmoll.eu$", mail)
-
-		if match == true {
-			_, err := canyes.Exec(`INSERT INTO users (mail) VALUES ($1)`, mail)
-			if err != nil {
-				return LoginResponse{false, ""}
-			}
-
-			users := getUsers(mail)
-
-			if len(users) >= 1 {
-				_, err := canyes.Exec(`INSERT INTO sessions (session_id,user_id,expiration,token) VALUES (DEFAULT, $1,$2,$3)`, users[0].Id, expirate, token)
-				if err != nil {
-					fmt.Println(err)
-					return LoginResponse{false, ""}
-				}
-			} else {
-				return LoginResponse{false, ""}
-			}
-		} else {
-			return LoginResponse{false, ""}
-		}
+		return LoginResponse{true, token}
 	}
 
-	return LoginResponse{true, token}
+	match, _ := regexp.MatchString("[a-zA-Z]+@cifpfbmoll.eu", mail)
+
+	if match == true {
+		_, err := canyes.Exec(`INSERT INTO users(user_id, mail) VALUES (DEFAULT, $1)`, mail)
+		if err != nil {
+			return LoginResponse{false, ""}
+		}
+		return login(mail)
+	}
+	return LoginResponse{false, ""}
 }
 
 func logout(reqBody LogoutRequestBody) LogoutResponse { // * DONE
